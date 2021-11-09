@@ -11,11 +11,62 @@
         var cols = [{
             id: "id",
             dataType: tableau.dataTypeEnum.string
-        }, {
+        },
+        {
+            id: "source",
+            alias: "source",
+            dataType: tableau.dataTypeEnum.int
+        },
+        {
             id: "priority_name",
             alias: "priority",
             dataType: tableau.dataTypeEnum.string
+        },
+        {
+            id: "created_at",
+            alias: "Created at",
+            dataType: tableau.dataTypeEnum.datetime
+        },
+        {
+            id: "updated_at",
+            alias: "updated_at",
+            dataType: tableau.dataTypeEnum.dateTime
         }, {
+            id: "first_response_escalated",
+            alias: "first_response_escalated",
+            dataType: tableau.dataTypeEnum.bool
+        },
+        {
+            id: "documentation_required",
+            alias: "documentation_required",
+            dataType: tableau.dataTypeEnum.bool
+        },
+        {
+            id: "ticket_type",
+            alias: "ticket_type",
+            dataType: tableau.dataTypeEnum.string
+        },
+        {
+            id: "group_id",
+            alias: "group_id",
+            dataType: tableau.dataTypeEnum.string
+        },
+        {
+            id: "due_by",
+            alias: "due_by",
+            dataType: tableau.dataTypeEnum.dateTime
+        },
+        {
+            id: "requester_name",
+            alias: "requester_name",
+            dataType: tableau.dataTypeEnum.string
+        },
+        {
+            id: "requester_id",
+            alias: "requester_id",
+            dataType: tableau.dataTypeEnum.string
+        },
+        {
             id: "subject",
             alias: "subject",
             dataType: tableau.dataTypeEnum.string
@@ -64,7 +115,17 @@
                         for (var i = 0, len = response.length; i < len; i++) {
                             tableData.push({
                                 "id": response[i].display_id,
+                                "source": response[i].source,
                                 "priority_name": response[i].priority_name,
+                                "created_at": response[i].created_at,
+                                "updated_at": response[i].updated_at,
+                                "first_response_escalated": response[i].fr_escalated,
+                                "documentation_required": response[i].custom_field.cf_documentation_required_876066,
+                                "ticket_type": response[i].ticket_type,
+                                "group_id": response[i].group_id,
+                                "due_by": response[i].due_by,
+                                "requester_name": response[i].requester_name,
+                                "requester_id": response[i].requester_id,
                                 "subject": response[i].subject,
                                 "status_name": response[i].status_name,
                                 "responder_name": response[i].responder_name,
