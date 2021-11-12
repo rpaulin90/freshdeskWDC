@@ -122,7 +122,7 @@
                                 "first_response_escalated": response[i].fr_escalated,
                                 "documentation_required": (response[i].custom_field.cf_documentation_required_876066 == null ? 'Empty' : response[i].custom_field.cf_documentation_required_876066),
                                 "ticket_type": (response[i].ticket_type == null ? 'Empty' : response[i].ticket_type),
-                                "group_id": response[i].group_id,
+                                "group_id": (response[i].group_id == null ? 123 : response[i].group_id),
                                 "due_by": response[i].due_by,
                                 "requester_name": response[i].requester_name,
                                 "requester_id": response[i].requester_id,
