@@ -30,7 +30,7 @@
         {
             id: "updated_at",
             alias: "updated_at",
-            dataType: tableau.dataTypeEnum.dateTime
+            dataType: tableau.dataTypeEnum.datetime
         }, {
             id: "first_response_escalated",
             alias: "first_response_escalated",
@@ -54,7 +54,7 @@
         {
             id: "due_by",
             alias: "due_by",
-            dataType: tableau.dataTypeEnum.dateTime
+            dataType: tableau.dataTypeEnum.datetime
         },
         {
             id: "requester_name",
