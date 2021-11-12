@@ -10,7 +10,7 @@
     myConnector.getSchema = function (schemaCallback) {
         var cols = [{
             id: "id",
-            dataType: tableau.dataTypeEnum.int
+            dataType: tableau.dataTypeEnum.string
         },
         {
             id: "source",
@@ -49,7 +49,7 @@
         {
             id: "group_id",
             alias: "group_id",
-            dataType: tableau.dataTypeEnum.int
+            dataType: tableau.dataTypeEnum.string
         },
         {
             id: "due_by",
@@ -64,7 +64,7 @@
         {
             id: "requester_id",
             alias: "requester_id",
-            dataType: tableau.dataTypeEnum.int
+            dataType: tableau.dataTypeEnum.string
         },
         {
             id: "subject",
@@ -114,7 +114,7 @@
                         // Iterate over the JSON object
                         for (var i = 0, len = response.length; i < len; i++) {
                             tableData.push({
-                                "id": response[i].display_id,
+                                "id": (response[i].display_id).toString(),
                                 "source": response[i].source,
                                 "priority_name": response[i].priority_name,
                                 "created_at": response[i].created_at,
@@ -122,10 +122,10 @@
                                 "first_response_escalated": response[i].fr_escalated,
                                 "documentation_required": (response[i].custom_field.cf_documentation_required_876066 == null ? 'Empty' : response[i].custom_field.cf_documentation_required_876066),
                                 "ticket_type": (response[i].ticket_type == null ? 'Empty' : response[i].ticket_type),
-                                "group_id": (response[i].group_id == null ? 123 : response[i].group_id),
+                                "group_id": (response[i].group_id == null ? 123 : response[i].group_id).toString(),
                                 "due_by": response[i].due_by,
                                 "requester_name": response[i].requester_name,
-                                "requester_id": response[i].requester_id,
+                                "requester_id": (response[i].requester_id).toString(),
                                 "subject": response[i].subject,
                                 "status_name": response[i].status_name,
                                 "responder_name": response[i].responder_name,
