@@ -10,7 +10,7 @@
     myConnector.getSchema = function (schemaCallback) {
         var cols = [{
             id: "id",
-            dataType: tableau.dataTypeEnum.string
+            dataType: tableau.dataTypeEnum.int
         },
         {
             id: "source",
@@ -39,7 +39,7 @@
         {
             id: "documentation_required",
             alias: "documentation_required",
-            dataType: tableau.dataTypeEnum.bool
+            dataType: tableau.dataTypeEnum.string
         },
         {
             id: "ticket_type",
@@ -49,7 +49,7 @@
         {
             id: "group_id",
             alias: "group_id",
-            dataType: tableau.dataTypeEnum.string
+            dataType: tableau.dataTypeEnum.int
         },
         {
             id: "due_by",
@@ -64,7 +64,7 @@
         {
             id: "requester_id",
             alias: "requester_id",
-            dataType: tableau.dataTypeEnum.string
+            dataType: tableau.dataTypeEnum.int
         },
         {
             id: "subject",
