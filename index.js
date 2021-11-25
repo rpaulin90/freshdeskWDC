@@ -48,8 +48,13 @@
             dataType: tableau.dataTypeEnum.string
         },
         {
-            id: "group_id",
-            alias: "group_id",
+            id: "company_id",
+            alias: "company_id",
+            dataType: tableau.dataTypeEnum.string
+        },
+        {
+            id: "company_name",
+            alias: "company_name",
             dataType: tableau.dataTypeEnum.string
         },
         {
@@ -94,27 +99,34 @@
 
     myConnector.getData = function (table, doneCallback) {
         const apiKey = tableau.password;
-        function loop(x) {
-
-
+        function loop(x, customer) {
 
             $.ajax({
                 type: "GET",
-                url: `https://syssero.freshdesk.com/helpdesk/tickets/filter/all_tickets?format=json&page=${x}`,
+                url: `https://syssero.freshdesk.com/helpdesk/tickets/filter/all_tickets?format=json&company_id=${customer.id}&&page=${x}`,
                 dataType: 'json',
                 headers: {
                     "Authorization": "Basic " + btoa(apiKey + ":123")
                 },
                 success: function (resp, status, xhr) {
+                    //console.log(customers)
                     var response = resp,
                         tableData = [];
-                    console.log(xhr)
-                    console.log(response)
+                    // console.log(xhr)
+                    // console.log(response)
 
                     if (resp.length > 0) {
                         var dateFormat = "Y-MM-DD HH:mm:ss";
                         // Iterate over the JSON object
                         for (var i = 0, len = response.length; i < len; i++) {
+
+                            // if (i == 0 && response[i].owner_id != null) {
+                            //     console.log((customers.filter(c => c.customer.id == response[i].owner_id))[0].customer.name)
+                            //     console.log(response[i].owner_id)
+                            // }
+
+
+
                             tableData.push({
                                 "id": (response[i].display_id).toString(),
                                 "source": response[i].source,
@@ -124,7 +136,8 @@
                                 "first_response_escalated": response[i].fr_escalated,
                                 "documentation_required": (response[i].custom_field.cf_documentation_required_876066 == null ? 'Empty' : response[i].custom_field.cf_documentation_required_876066),
                                 "ticket_type": (response[i].ticket_type == null ? 'Empty' : response[i].ticket_type),
-                                "group_id": (response[i].group_id == null ? 123 : response[i].group_id).toString(),
+                                "company_id": customer.id,
+                                "company_name": customer.name,
                                 "due_by": moment(response[i].due_by).format(dateFormat),
                                 "requester_name": response[i].requester_name,
                                 "requester_id": (response[i].requester_id).toString(),
@@ -136,7 +149,7 @@
                         }
 
                         table.appendRows(tableData);
-                        loop(x + 1)
+                        loop(x + 1, customer.id)
 
                     } else { doneCallback(); }
 
@@ -146,7 +159,29 @@
 
         }
 
-        loop(1)
+        function makeCustomersAjaxCall(url, methodType, callback) {
+            return $.ajax({
+                url: url,
+                method: methodType,
+                dataType: "json",
+                headers: {
+                    "Authorization": "Basic " + btoa(apiKey + ":123")
+                }
+            })
+        }
+
+        makeCustomersAjaxCall(`https://syssero.freshdesk.com/customers.json`, "GET").then(function (resp1) {
+            for (var c = 0, clen = resp1.length; c < clen; c++) {
+
+                loop(1, resp1[c].customer)
+
+            }
+        }, function (reason) {
+            console.log("error in processing your request", reason);
+        });
+
+
+
 
     };
 
