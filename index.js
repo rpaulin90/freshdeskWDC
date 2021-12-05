@@ -16,7 +16,7 @@
         {
             id: "source",
             alias: "source",
-            dataType: tableau.dataTypeEnum.int
+            dataType: tableau.dataTypeEnum.string
         },
         {
             id: "priority_name",
@@ -84,6 +84,38 @@
             id: "responder_name",
             alias: "agent",
             dataType: tableau.dataTypeEnum.string
+        }, {
+            id: "agent_responded_at",
+            alias: "agent_responded_at",
+            dataType: tableau.dataTypeEnum.datetime
+        }, {
+            id: "requester_responded_at",
+            alias: "requester_responded_at",
+            dataType: tableau.dataTypeEnum.datetime
+        }, {
+            id: "first_responded_at",
+            alias: "first_responded_at",
+            dataType: tableau.dataTypeEnum.datetime
+        }, {
+            id: "status_updated_at",
+            alias: "status_updated_at",
+            dataType: tableau.dataTypeEnum.datetime
+        }, {
+            id: "reopened_at",
+            alias: "reopened_at",
+            dataType: tableau.dataTypeEnum.datetime
+        }, {
+            id: "resolved_at",
+            alias: "resolved_at",
+            dataType: tableau.dataTypeEnum.datetime
+        }, {
+            id: "closed_at",
+            alias: "closed_at",
+            dataType: tableau.dataTypeEnum.datetime
+        }, {
+            id: "pending_since",
+            alias: "pending_since",
+            dataType: tableau.dataTypeEnum.datetime
         },];
 
         var tableSchema = {
@@ -99,11 +131,12 @@
 
     myConnector.getData = function (table, doneCallback) {
         const apiKey = tableau.password;
-        function loop(x, customer) {
+        function loop(x, customer, agent_array) {
 
+            //console.log(agent_array[0])
             $.ajax({
                 type: "GET",
-                url: `https://syssero.freshdesk.com/helpdesk/tickets/filter/all_tickets?format=json&company_id=${customer.id}&&page=${x}`,
+                url: `https://syssero.freshdesk.com/api/v2/tickets?company_id=${customer.id}&page=${x}&include=stats,requester`,
                 dataType: 'json',
                 headers: {
                     "Authorization": "Basic " + btoa(apiKey + ":123")
@@ -113,7 +146,7 @@
                     var response = resp,
                         tableData = [];
                     // console.log(xhr)
-                    // console.log(response)
+                    console.log(agent_array.filter(agent => agent.id == '42019954398')[0].contact.name)
 
                     if (resp.length > 0) {
                         var dateFormat = "Y-MM-DD HH:mm:ss";
@@ -125,31 +158,43 @@
                             //     console.log(response[i].owner_id)
                             // }
 
+                            var priority_map = ['Low', 'Medium', 'High', 'Urgent']
 
+                            var source_map = ['Email', 'Portal', 'Phone']
+
+                            var status_map = ['Open', 'Pending', 'Resolved', 'Closed', '', '', 'Pending in Sandbox Tenant', 'Pending in Implementation Tenant', 'Pending in Preview Tenant', 'On hold', 'Roadmap']
 
                             tableData.push({
-                                "id": (response[i].display_id).toString(),
-                                "source": response[i].source,
-                                "priority_name": response[i].priority_name,
+                                "id": (response[i].id).toString(),
+                                "source": source_map[response[i].source - 1],
+                                "priority_name": priority_map[response[i].priority - 1],
                                 "created_at": moment(response[i].created_at).format(dateFormat),
                                 "updated_at": moment(response[i].updated_at).format(dateFormat),
                                 "first_response_escalated": response[i].fr_escalated,
-                                "documentation_required": (response[i].custom_field.cf_documentation_required_876066 == null ? 'Empty' : response[i].custom_field.cf_documentation_required_876066),
-                                "ticket_type": (response[i].ticket_type == null ? 'Empty' : response[i].ticket_type),
+                                "documentation_required": (response[i].custom_fields.cf_documentation_required == null ? 'Empty' : response[i].custom_fields.cf_documentation_required),
+                                "ticket_type": (response[i].type == null ? 'Empty' : response[i].type),
                                 "company_id": customer.id,
                                 "company_name": customer.name,
                                 "due_by": moment(response[i].due_by).format(dateFormat),
-                                "requester_name": response[i].requester_name,
-                                "requester_id": (response[i].requester_id).toString(),
+                                "requester_name": response[i].requester.name,
+                                "requester_id": (response[i].requester.id).toString(),
                                 "subject": response[i].subject,
-                                "status_name": response[i].status_name,
-                                "responder_name": response[i].responder_name,
+                                "status_name": status_map[response[i].status - 2],
+                                "responder_name": agent_array.filter(agent => agent.id == response[i].responder_id)[0] == undefined ? 'no agent' : agent_array.filter(agent => agent.id == response[i].responder_id)[0].contact.name,
+                                "agent_responded_at": response[i].stats.agent_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.agent_responded_at).format(dateFormat),
+                                "requester_responded_at": response[i].stats.requester_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.requester_responded_at).format(dateFormat),
+                                "first_responded_at": response[i].stats.first_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.first_responded_at).format(dateFormat),
+                                "status_updated_at": response[i].stats.status_updated_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.status_updated_at).format(dateFormat),
+                                "reopened_at": response[i].stats.reopened_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.reopened_at).format(dateFormat),
+                                "resolved_at": response[i].stats.resolved_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.resolved_at).format(dateFormat),
+                                "closed_at": response[i].stats.closed_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.closed_at).format(dateFormat),
+                                "pending_since": response[i].stats.pending_since == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.pending_since).format(dateFormat),
 
                             });
                         }
 
                         table.appendRows(tableData);
-                        loop(x + 1, customer.id)
+                        loop(x + 1, customer, agent_array)
 
                     } else { doneCallback(); }
 
@@ -157,6 +202,40 @@
 
             });
 
+        }
+
+
+        function loop_agents(x, arr) {
+
+            return $.ajax({
+                type: "GET",
+                url: `https://syssero.freshdesk.com/api/v2/agents?&page=${x}`,
+                dataType: 'json',
+                headers: {
+                    "Authorization": "Basic " + btoa(apiKey + ":123")
+                },
+                success: function (resp, status, xhr) {
+                    //console.log(customers)
+                    var response = resp
+
+
+                    if (resp.length > 0) {
+
+                        // Iterate over the JSON object
+                        for (var i = 0, len = response.length; i < len; i++) {
+
+                            arr.push(response[i])
+                        }
+
+
+                        loop_agents(x + 1, arr)
+
+                    } else {
+                        return arr
+                    }
+
+                }
+            })
         }
 
         function makeCustomersAjaxCall(url, methodType, callback) {
@@ -170,15 +249,21 @@
             })
         }
 
-        makeCustomersAjaxCall(`https://syssero.freshdesk.com/customers.json`, "GET").then(function (resp1) {
-            for (var c = 0, clen = resp1.length; c < clen; c++) {
 
-                loop(1, resp1[c].customer)
+        loop_agents(1, []).then(function (resp_arr) {
+            makeCustomersAjaxCall(`https://syssero.freshdesk.com/customers.json`, "GET").then(function (resp1) {
+                for (var c = 0, clen = resp1.length; c < clen; c++) {
 
-            }
+                    loop(1, resp1[c].customer, resp_arr)
+
+                }
+            }, function (reason) {
+                console.log("error in processing your request", reason);
+            });
         }, function (reason) {
             console.log("error in processing your request", reason);
-        });
+        })
+
 
 
 
