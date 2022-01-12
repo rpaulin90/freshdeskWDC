@@ -231,7 +231,16 @@
                         loop_agents(x + 1, arr)
 
                     } else {
-                        return arr
+                        makeCustomersAjaxCall(`https://syssero.freshdesk.com/customers.json`, "GET").then(function (resp1) {
+                            for (var c = 0, clen = resp1.length; c < clen; c++) {
+
+                                loop(1, resp1[c].customer, arr)
+
+                            }
+                        }, function (reason) {
+                            console.log("error in processing your request", reason);
+                        });
+
                     }
 
                 }
@@ -250,19 +259,7 @@
         }
 
 
-        loop_agents(1, []).then(function (resp_arr) {
-            makeCustomersAjaxCall(`https://syssero.freshdesk.com/customers.json`, "GET").then(function (resp1) {
-                for (var c = 0, clen = resp1.length; c < clen; c++) {
-
-                    loop(1, resp1[c].customer, resp_arr)
-
-                }
-            }, function (reason) {
-                console.log("error in processing your request", reason);
-            });
-        }, function (reason) {
-            console.log("error in processing your request", reason);
-        })
+        loop_agents(1, [])
 
 
 
