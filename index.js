@@ -131,12 +131,12 @@
 
     myConnector.getData = function (table, doneCallback) {
         const apiKey = tableau.password;
-        function loop() {
+        function loop(x, customer, agent_array) {
 
             //console.log(agent_array[0])
             $.ajax({
                 type: "GET",
-                url: `https://syssero.freshdesk.com/api/v2/tickets?per_page=100&include=stats,requester,company`,
+                url: `https://syssero.freshdesk.com/api/v2/tickets?company_id=${customer.id}&page=${x}&include=stats,requester`,
                 dataType: 'json',
                 headers: {
                     "Authorization": "Basic " + btoa(apiKey + ":123")
@@ -173,14 +173,14 @@
                                 "first_response_escalated": response[i].fr_escalated,
                                 "documentation_required": (response[i].custom_fields.cf_documentation_required == null ? 'Empty' : response[i].custom_fields.cf_documentation_required),
                                 "ticket_type": (response[i].type == null ? 'Empty' : response[i].type),
-                                "company_id": response[i].company.id,
-                                "company_name": response[i].company.name,
+                                "company_id": customer.id,
+                                "company_name": customer.name,
                                 "due_by": moment(response[i].due_by).format(dateFormat),
                                 "requester_name": response[i].requester.name,
                                 "requester_id": (response[i].requester.id).toString(),
                                 "subject": response[i].subject,
                                 "status_name": status_map[response[i].status - 2],
-                                "responder_name": response[i].responder_id,
+                                "responder_name": agent_array.filter(agent => agent.id == response[i].responder_id)[0] == undefined ? 'no agent' : agent_array.filter(agent => agent.id == response[i].responder_id)[0].contact.name,
                                 "agent_responded_at": response[i].stats.agent_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.agent_responded_at).format(dateFormat),
                                 "requester_responded_at": response[i].stats.requester_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.requester_responded_at).format(dateFormat),
                                 "first_responded_at": response[i].stats.first_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.first_responded_at).format(dateFormat),
@@ -194,9 +194,9 @@
                         }
 
                         table.appendRows(tableData);
-                        doneCallback();
+                        loop(x + 1, customer, agent_array)
 
-                    } else { console.log('errorrrr') }
+                    } else { doneCallback(); }
 
                 }
 
@@ -205,8 +205,61 @@
         }
 
 
+        function loop_agents(x, arr) {
 
-        loop()
+            return $.ajax({
+                type: "GET",
+                url: `https://syssero.freshdesk.com/api/v2/agents?&page=${x}`,
+                dataType: 'json',
+                headers: {
+                    "Authorization": "Basic " + btoa(apiKey + ":123")
+                },
+                success: function (resp, status, xhr) {
+                    //console.log(customers)
+                    var response = resp
+
+
+                    if (resp.length > 0) {
+
+                        // Iterate over the JSON object
+                        for (var i = 0, len = response.length; i < len; i++) {
+
+                            arr.push(response[i])
+                        }
+
+
+                        loop_agents(x + 1, arr)
+
+                    } else {
+                        makeCustomersAjaxCall(`https://syssero.freshdesk.com/customers.json`, "GET").then(function (resp1) {
+                            for (var c = 0, clen = resp1.length; c < clen; c++) {
+
+                                loop(1, resp1[c].customer, arr)
+
+                            }
+                        }, function (reason) {
+                            console.log("error in processing your request", reason);
+                        });
+
+                    }
+
+                }
+            })
+        }
+
+        function makeCustomersAjaxCall(url, methodType, callback) {
+            return $.ajax({
+                url: url,
+                method: methodType,
+                dataType: "json",
+                headers: {
+                    "Authorization": "Basic " + btoa(apiKey + ":123")
+                }
+            })
+        }
+
+
+        loop_agents(1, [])
 
 
 
