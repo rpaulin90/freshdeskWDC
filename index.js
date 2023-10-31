@@ -134,74 +134,76 @@
         function loop(x, agent_array) {
 
             //console.log(agent_array[0])
-            $.ajax({
-                type: "GET",
-                url: `https://syssero.freshdesk.com/api/v2/tickets?updated_since=2015-01-19&page=${x}&include=stats,requester,company`,
-                dataType: 'json',
-                headers: {
-                    "Authorization": "Basic " + btoa(apiKey + ":123")
-                }
-            }).done(function (resp, status, xhr) {
-                //console.log(customers)
-                console.log(x)
-                var response = resp,
-                    tableData = [];
-                // console.log(xhr)
-                //console.log(agent_array.filter(agent => agent.id == '42019954398')[0].contact.name)
-
-                if (resp.length > 0) {
-                    var dateFormat = "Y-MM-DD HH:mm:ss";
-                    // Iterate over the JSON object
-                    for (var i = 0, len = response.length; i < len; i++) {
-
-                        // if (i == 0 && response[i].owner_id != null) {
-                        //     console.log((customers.filter(c => c.customer.id == response[i].owner_id))[0].customer.name)
-                        //     console.log(response[i].owner_id)
-                        // }
-
-                        var priority_map = ['Low', 'Medium', 'High', 'Urgent']
-
-                        var source_map = ['Email', 'Portal', 'Phone']
-
-                        var status_map = ['Open', 'Pending', 'Resolved', 'Closed', '', '', 'Pending in Sandbox Tenant', 'Pending in Implementation Tenant', 'Pending in Preview Tenant', 'On hold', 'Roadmap']
-
-                        tableData.push({
-                            "id": (response[i].id).toString(),
-                            "source": source_map[response[i].source - 1],
-                            "priority_name": priority_map[response[i].priority - 1],
-                            "created_at": moment(response[i].created_at).format(dateFormat),
-                            "updated_at": moment(response[i].updated_at).format(dateFormat),
-                            "first_response_escalated": response[i].fr_escalated,
-                            "documentation_required": (response[i].custom_fields.cf_documentation_required == null ? 'Empty' : response[i].custom_fields.cf_documentation_required),
-                            "ticket_type": (response[i].type == null ? 'Empty' : response[i].type),
-                            "company_id": response[i].company.id,
-                            "company_name": response[i].company.name,
-                            "due_by": moment(response[i].due_by).format(dateFormat),
-                            "requester_name": response[i].requester.name,
-                            "requester_id": (response[i].requester.id).toString(),
-                            "subject": response[i].subject,
-                            "status_name": status_map[response[i].status - 2],
-                            "responder_name": agent_array.filter(agent => agent.id == response[i].responder_id)[0] == undefined ? 'no agent' : agent_array.filter(agent => agent.id == response[i].responder_id)[0].contact.name,
-                            "agent_responded_at": response[i].stats.agent_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.agent_responded_at).format(dateFormat),
-                            "requester_responded_at": response[i].stats.requester_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.requester_responded_at).format(dateFormat),
-                            "first_responded_at": response[i].stats.first_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.first_responded_at).format(dateFormat),
-                            "status_updated_at": response[i].stats.status_updated_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.status_updated_at).format(dateFormat),
-                            "reopened_at": response[i].stats.reopened_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.reopened_at).format(dateFormat),
-                            "resolved_at": response[i].stats.resolved_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.resolved_at).format(dateFormat),
-                            "closed_at": response[i].stats.closed_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.closed_at).format(dateFormat),
-                            "pending_since": response[i].stats.pending_since == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.pending_since).format(dateFormat),
-
-                        });
+            setTimeout(function () {
+                $.ajax({
+                    type: "GET",
+                    url: `https://syssero.freshdesk.com/api/v2/tickets?updated_since=2015-01-19&per_page=100&page=${x}&include=stats,requester,company`,
+                    dataType: 'json',
+                    headers: {
+                        "Authorization": "Basic " + btoa(apiKey + ":123")
                     }
+                }).done(function (resp, status, xhr) {
+                    //console.log(customers)
+                    console.log(x)
+                    var response = resp,
+                        tableData = [];
+                    // console.log(xhr)
+                    //console.log(agent_array.filter(agent => agent.id == '42019954398')[0].contact.name)
 
-                    table.appendRows(tableData);
-                    loop(x + 1, agent_array)
+                    if (resp.length > 0) {
+                        var dateFormat = "Y-MM-DD HH:mm:ss";
+                        // Iterate over the JSON object
+                        for (var i = 0, len = response.length; i < len; i++) {
 
-                } else { doneCallback(); }
+                            // if (i == 0 && response[i].owner_id != null) {
+                            //     console.log((customers.filter(c => c.customer.id == response[i].owner_id))[0].customer.name)
+                            //     console.log(response[i].owner_id)
+                            // }
+
+                            var priority_map = ['Low', 'Medium', 'High', 'Urgent']
+
+                            var source_map = ['Email', 'Portal', 'Phone']
+
+                            var status_map = ['Open', 'Pending', 'Resolved', 'Closed', '', '', 'Pending in Sandbox Tenant', 'Pending in Implementation Tenant', 'Pending in Preview Tenant', 'On hold', 'Roadmap']
+
+                            tableData.push({
+                                "id": (response[i].id).toString(),
+                                "source": source_map[response[i].source - 1],
+                                "priority_name": priority_map[response[i].priority - 1],
+                                "created_at": moment(response[i].created_at).format(dateFormat),
+                                "updated_at": moment(response[i].updated_at).format(dateFormat),
+                                "first_response_escalated": response[i].fr_escalated,
+                                "documentation_required": (response[i].custom_fields.cf_documentation_required == null ? 'Empty' : response[i].custom_fields.cf_documentation_required),
+                                "ticket_type": (response[i].type == null ? 'Empty' : response[i].type),
+                                "company_id": response[i].company.id,
+                                "company_name": response[i].company.name,
+                                "due_by": moment(response[i].due_by).format(dateFormat),
+                                "requester_name": response[i].requester.name,
+                                "requester_id": (response[i].requester.id).toString(),
+                                "subject": response[i].subject,
+                                "status_name": status_map[response[i].status - 2],
+                                "responder_name": agent_array.filter(agent => agent.id == response[i].responder_id)[0] == undefined ? 'no agent' : agent_array.filter(agent => agent.id == response[i].responder_id)[0].contact.name,
+                                "agent_responded_at": response[i].stats.agent_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.agent_responded_at).format(dateFormat),
+                                "requester_responded_at": response[i].stats.requester_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.requester_responded_at).format(dateFormat),
+                                "first_responded_at": response[i].stats.first_responded_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.first_responded_at).format(dateFormat),
+                                "status_updated_at": response[i].stats.status_updated_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.status_updated_at).format(dateFormat),
+                                "reopened_at": response[i].stats.reopened_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.reopened_at).format(dateFormat),
+                                "resolved_at": response[i].stats.resolved_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.resolved_at).format(dateFormat),
+                                "closed_at": response[i].stats.closed_at == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.closed_at).format(dateFormat),
+                                "pending_since": response[i].stats.pending_since == null ? moment('1800-01-01').format(dateFormat) : moment(response[i].stats.pending_since).format(dateFormat),
+
+                            });
+                        }
+
+                        table.appendRows(tableData);
+                        loop(x + 1, agent_array)
+
+                    } else { doneCallback(); }
 
 
 
-            });
+                });
+            }, 1500); // 1500 millisecond delay
         }
 
 
